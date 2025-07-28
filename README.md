@@ -24,6 +24,5 @@
 
 ** Currently, only the User Dashboard includes the full set of updated features.**
 
-Let me know if anything else is needed.
 
 
