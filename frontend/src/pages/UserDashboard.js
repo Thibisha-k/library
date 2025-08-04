@@ -1,36 +1,66 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../App.css";
+import { useNavigate } from "react-router-dom";
 
-function App() {
+function UserDashboard({ onLogout }) {
   const [books, setBooks] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [issuedOnly, setIssuedOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBook, setSelectedBook] = useState(null);
   const [issuedBooks, setIssuedBooks] = useState([]);
   const [sortBy, setSortBy] = useState("");
+  const [username, setUsername] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchBooks();
-    fetchIssuedBooks();
+    const token = localStorage.getItem("token");
+    const savedUser = localStorage.getItem("username");
+
+    if (!token || !savedUser) {
+      navigate("/");
+    } else {
+      setUsername(savedUser);
+      fetchAllData(savedUser, token);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy]);
 
-  const fetchBooks = async () => {
-    const res = await axios.get(`http://localhost:5000/books${sortBy ? `?sortBy=${sortBy}` : ""}`);
-    setBooks(res.data);
+  const fetchAllData = async (savedUser, token) => {
+    try {
+      const bookRes = await axios.get(
+        `http://localhost:5000/books${sortBy ? `?sortBy=${sortBy}` : ""}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setBooks(bookRes.data);
+
+      const issuedRes = await axios.get("http://localhost:5000/issued", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userBooks = issuedRes.data.filter(
+        (book) => book.issuedBy === savedUser
+      );
+      setIssuedBooks(userBooks);
+    } catch (err) {
+      if (err.response?.status === 401) handleLogout();
+    }
   };
 
-  const fetchIssuedBooks = async () => {
-    const res = await axios.get("http://localhost:5000/issued");
-    setIssuedBooks(res.data);
+  const handleLogout = () => {
+    localStorage.clear();
+    if (onLogout) onLogout();
+    navigate("/");
   };
 
   const handleIssue = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/books/${id}/issue`);
-      fetchBooks();
-      fetchIssuedBooks();
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `http://localhost:5000/books/${id}/issue`,
+        { username },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchAllData(username, token);
     } catch (err) {
       alert(err.response?.data?.error || "Error issuing book");
     }
@@ -38,9 +68,13 @@ function App() {
 
   const handleReturn = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/books/${id}/return`);
-      fetchBooks();
-      fetchIssuedBooks();
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `http://localhost:5000/books/${id}/return`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchAllData(username, token);
     } catch (err) {
       alert("Error returning book");
     }
@@ -49,34 +83,40 @@ function App() {
   const categories = ["All", ...new Set(books.map((book) => book.category))];
 
   const filteredBooks = books.filter((book) => {
-    const matchesCategory =
+    const matchCategory =
       categoryFilter === "All" || book.category === categoryFilter;
-    const matchesIssued = !issuedOnly || book.issued;
-    const matchesSearch =
+    const matchIssued = !issuedOnly || book.issuedBy === username;
+    const matchSearch =
       book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       book.author.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesIssued && matchesSearch;
+    return matchCategory && matchIssued && matchSearch;
   });
-
-  const openModal = (book) => setSelectedBook(book);
-  const closeModal = () => setSelectedBook(null);
 
   return (
     <div className="App">
-      <h1 className="heading">Mini Library</h1>
+      <div className="top-bar">
+        <h1>Mini Library</h1>
+        <div>
+          <span>Welcome, {username}</span>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </div>
+      </div>
 
-      {/* Filters */}
       <div className="filters">
         <input
           type="text"
           placeholder="Search by title or author"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="search-input"
         />
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-          {categories.map((cat, index) => (
-            <option key={index} value={cat}>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
+          {categories.map((cat, i) => (
+            <option key={i} value={cat}>
               {cat}
             </option>
           ))}
@@ -86,7 +126,7 @@ function App() {
           <option value="title">Title</option>
           <option value="dueDate">Due Date</option>
         </select>
-        <label className="checkbox-label">
+        <label>
           <input
             type="checkbox"
             checked={issuedOnly}
@@ -96,86 +136,48 @@ function App() {
         </label>
       </div>
 
-      {/* Book Cards */}
-      {filteredBooks.length === 0 ? (
-        <div className="no-books">📚 No books found matching your filters.</div>
-      ) : (
-        <div className="book-container">
-          {filteredBooks.map((book) => (
-            <div
-              key={book.id}
-              className={`book-card ${book.overdue ? "overdue" : ""}`}
-              onClick={() => openModal(book)}
-            >
-              <h2>{book.title}</h2>
-              <p><strong>Author:</strong> {book.author}</p>
-              <p><strong>Category:</strong> {book.category}</p>
-              <p><strong>Status:</strong> {book.issued ? "Issued" : "Available"}</p>
-              {book.overdue && <p className="overdue-text">⚠️ Overdue</p>}
-              {book.issued ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReturn(book.id);
-                  }}
-                >
-                  Return
-                </button>
-              ) : (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleIssue(book.id);
-                  }}
-                >
-                  Issue
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Modal */}
-      {selectedBook && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>{selectedBook.title}</h2>
-            <p><strong>Author:</strong> {selectedBook.author}</p>
-            <p><strong>Category:</strong> {selectedBook.category}</p>
-            <p><strong>Status:</strong> {selectedBook.issued ? "Issued" : "Available"}</p>
-            {selectedBook.issued && selectedBook.dueDate && (
-              <p><strong>Due Date:</strong> {selectedBook.dueDate}</p>
+      <div className="book-container">
+        {filteredBooks.map((book) => (
+          <div key={book.id} className="book-card">
+            <h3>{book.title}</h3>
+            <p>
+              <strong>Author:</strong> {book.author}
+            </p>
+            <p>
+              <strong>Category:</strong> {book.category}
+            </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              {book.issued ? "Issued" : "Available"}
+            </p>
+            {book.issued && book.issuedBy !== username ? (
+              <button disabled>Issued by someone</button>
+            ) : book.issued ? (
+              <button onClick={() => handleReturn(book.id)}>Return</button>
+            ) : (
+              <button onClick={() => handleIssue(book.id)}>Issue</button>
             )}
-            {selectedBook.returnStatus && (
-              <p><strong>Return Status:</strong> {selectedBook.returnStatus}</p>
-            )}
-            {selectedBook.overdue && <p className="overdue-text">⚠️ This book is overdue!</p>}
-            <button onClick={closeModal}>Close</button>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
 
-      {/* Issued Books */}
       <div className="issued-section">
-        <h2>📦 Issued Books</h2>
-        {issuedBooks.length === 0 ? (
-          <p>No books currently issued.</p>
-        ) : (
+        <h2>📦 My Issued Books</h2>
+        {issuedBooks.length > 0 ? (
           <ul>
             {issuedBooks.map((book) => (
-              <li key={book.id} className={book.overdue ? "overdue" : ""}>
-                <strong>{book.title}</strong> — Due: {book.dueDate}
-                {book.overdue && <span className="overdue-text"> ⚠️ Overdue</span>}
-                <span> — {book.returnStatus}</span>
+              <li key={book.id}>
+                <strong>{book.title}</strong> — Due: {book.dueDate || "N/A"}
                 <button onClick={() => handleReturn(book.id)}>Return</button>
               </li>
             ))}
           </ul>
+        ) : (
+          <p>No books issued.</p>
         )}
       </div>
     </div>
   );
 }
 
-export default App;
+export default UserDashboard;

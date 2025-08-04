@@ -1,55 +1,117 @@
 /* LoginPage.css */
-.login-page {
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #4e54c8, #8f94fb);
   height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: #121212;
-  color: white;
-  font-family: 'Segoe UI', sans-serif;
+  align-items: center;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
 }
 
 .login-card {
-  background-color: #1e1e1e;
-  padding: 40px;
+  background: white;
+  padding: 40px 30px;
   border-radius: 12px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 400px;
   text-align: center;
-  width: 350px;
 }
 
 .login-title {
   margin-bottom: 25px;
+  color: #333;
   font-size: 24px;
-  color: #ffffff;
 }
 
 .login-input {
   width: 100%;
-  padding: 12px;
+  padding: 12px 10px;
   margin: 10px 0;
   border-radius: 8px;
-  border: none;
-  outline: none;
-  background: #2c2c2c;
-  color: white;
-  font-size: 16px;
+  border: 1px solid #ccc;
+  font-size: 15px;
 }
 
 .login-btn {
   width: 100%;
   padding: 12px;
-  margin-top: 15px;
+  margin-top: 10px;
+  margin-bottom: 15px; /* Added space to separate from "Register here" */
   border: none;
-  border-radius: 8px;
-  background-color: #4caf50;
+  background-color: #4e54c8;
   color: white;
   font-weight: bold;
-  font-size: 16px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: 16px;
+  position: relative;
 }
 
 .login-btn:hover {
-  background-color: #388e3c;
+  background-color: #3c40a0;
+}
+
+/* Floating toast notification */
+.toast {
+  background-color: #e74c3c;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  animation: slideDownFade 3s ease-in-out;
+}
+
+@keyframes slideDownFade {
+  0% { opacity: 0; transform: translateY(-20px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+.register-link {
+  margin-top: 10px;
+}
+
+.register-span {
+  color: #4e54c8;
+  cursor: pointer;
+  font-weight: bold;
+  display: inline-block;
+  transition: color 0.2s ease;
+}
+
+.register-span:hover {
+  color: #3c40a0;
+}
+
+.toast.success {
+  background-color: #2ecc71;
+}
+
+.toast.error {
+  background-color: #e74c3c;
 }

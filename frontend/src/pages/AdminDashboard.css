@@ -1,0 +1,184 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url("https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=1350&q=80") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+}
+
+.admin-container {
+  padding: 30px 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.admin-container h1 {
+  font-size: 2.8rem;
+  margin-bottom: 30px;
+  color: #ffffff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 35px;
+}
+
+.form-row input {
+  padding: 10px;
+  width: 160px;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.form-row button {
+  padding: 10px 18px;
+  border: none;
+  background-color: #7c3aed;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.form-row button:hover {
+  background-color: #5b21b6;
+}
+
+.confirmation-message {
+  background-color: #4caf50;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin: 0 auto 30px auto;
+  font-weight: bold;
+  text-align: center;
+  width: fit-content;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+  animation: fadeInOutForm 3s ease forwards;
+}
+
+@keyframes fadeInOutForm {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+.book-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+}
+
+.book-card {
+  background: #ffffff;
+  color: #000;
+  width: 250px;
+  border-radius: 10px;
+  padding: 18px 20px;
+  text-align: left;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+}
+
+.book-card h3 {
+  margin-top: 0;
+  font-size: 20px;
+  color: #222;
+}
+
+.book-card p {
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.admin-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px; /* Adds spacing between Edit and Delete */
+  margin-top: 15px;
+}
+
+.edit-btn,
+.delete-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.edit-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* 🔽 Responsive design */
+@media (max-width: 600px) {
+  .book-card {
+    width: 100%;
+  }
+
+  .form-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .form-row input {
+    width: 90%;
+  }
+
+  .admin-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+.logout-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(0,0,0,0.4);
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+.logout-container span {
+  color: #fff;
+  font-size: 16px;
+}
+
+.logout-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.logout-btn:hover {
+  background-color: #c62828;
+}
