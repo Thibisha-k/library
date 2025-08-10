@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './LoginPage.css';
+axios.defaults.withCredentials = true;
 
 function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -24,7 +25,11 @@ function RegisterPage() {
     setMessage('');
 
     try {
-      const res = await axios.post('http://localhost:5000/register', formData);
+      // In RegisterPage.js handleSubmit
+const res = await axios.post('http://localhost:5000/api/auth/register', formData);
+
+
+
       if (res.status === 201) {
         setMessage('✅ Registration successful! Redirecting...');
         setTimeout(() => navigate('/'), 1500);

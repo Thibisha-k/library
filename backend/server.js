@@ -1,16 +1,33 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./db');
-const Book = require('./models/Book');
-const User = require('./models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+const { body, validationResult } = require('express-validator');
+const Book = require('./models/Book');
+const User = require('./models/User');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const connectDB = require('./db');
 const cookieParser = require('cookie-parser');
-
-const app = express();
 const PORT = process.env.PORT || 5000;
 
+const app = express();
+
+
+// Connect to MongoDB Atlas
+connectDB();
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
+
+app.use(express.json());      // <== ADD THIS
+app.use(cookieParser());      // <== ADD THIS
+app.use(helmet());
 // ✅ CORS
 app.use(cors({
   origin: 'http://localhost:3000',
@@ -18,9 +35,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
-app.use(express.json());
-app.use(cookieParser());
-connectDB();
+
 
 const JWT_SECRET = process.env.JWT_SECRET || "library_secret_key";
 
@@ -184,7 +199,7 @@ const authenticate = (req, res, next) => {
 };
 
 // 🔐 Auth Routes
-app.post('/register', async (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password, role } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
@@ -201,11 +216,12 @@ app.post('/register', async (req, res) => {
 
     res.status(201).json({ message: 'User registered' });
   } catch (err) {
-    res.status(500).json({ error: 'Registration failed' });
+    console.error('Register error:', err);
+    res.status(500).json({ error: 'Registration failed', details: err.message });
   }
 });
 
-app.post('/login', async (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
@@ -228,11 +244,12 @@ app.post('/login', async (req, res) => {
 
     res.json({ token, username: user.username, role: user.role });
   } catch (err) {
-    res.status(500).json({ error: 'Login failed' });
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Login failed', details: err.message });
   }
 });
 
-app.post('/logout', (req, res) => {
+app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ message: 'Logged out' });
 });

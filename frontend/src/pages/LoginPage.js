@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './LoginPage.css';
+import './LoginPage.css'
+
 
 axios.defaults.withCredentials = true;  // Send cookies with every request
 
@@ -18,7 +19,11 @@ function LoginPage({ setRole, onLogin }) {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:5000/login', { username, password });
+  
+
+// In LoginPage.js handleLogin
+const res = await axios.post('http://localhost:5000/api/auth/login', { username, password });
+
 
       const { token, role } = res.data;
 
