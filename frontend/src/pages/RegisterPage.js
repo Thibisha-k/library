@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import { Box, Paper, Typography, TextField, Button, MenuItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import axios from 'axios';
-import './LoginPage.css';
+
 axios.defaults.withCredentials = true;
 
 function RegisterPage() {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
-    role: 'user'
+    role: 'user',
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +17,7 @@ function RegisterPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -25,11 +26,7 @@ function RegisterPage() {
     setMessage('');
 
     try {
-      // In RegisterPage.js handleSubmit
-const res = await axios.post('http://localhost:5000/api/auth/register', formData);
-
-
-
+      const res = await axios.post('http://localhost:5000/api/auth/register', formData);
       if (res.status === 201) {
         setMessage('✅ Registration successful! Redirecting...');
         setTimeout(() => navigate('/'), 1500);
@@ -40,50 +37,94 @@ const res = await axios.post('http://localhost:5000/api/auth/register', formData
   };
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <h2 className="login-title">📝 Register for Mini Library</h2>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 2,
+        // NO background here — rely on body CSS background image
+      }}
+    >
+      <Paper
+        elevation={8}
+        sx={{
+          p: 4,
+          maxWidth: 400,
+          width: '100%',
+          borderRadius: 3,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)', // slightly transparent white for subtle background
+        }}
+      >
+        <Typography variant="h5" fontWeight="bold" mb={3}>
+          📝 Register for Mini Library
+        </Typography>
 
-        {message && <div className="toast success">{message}</div>}
-        {error && <div className="toast error">{error}</div>}
+        {message && (
+          <Typography variant="body1" color="success.main" mb={2}>
+            {message}
+          </Typography>
+        )}
+        {error && (
+          <Typography variant="body1" color="error.main" mb={2}>
+            {error}
+          </Typography>
+        )}
 
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
+          <TextField
+            fullWidth
+            label="Username"
             name="username"
-            placeholder="Username"
             value={formData.username}
             onChange={handleChange}
+            margin="normal"
             required
-            className="login-input"
           />
-          <input
-            type="password"
+          <TextField
+            fullWidth
+            label="Password"
             name="password"
-            placeholder="Password"
+            type="password"
             value={formData.password}
             onChange={handleChange}
+            margin="normal"
             required
-            className="login-input"
           />
-          <select
+          <TextField
+            fullWidth
+            select
+            label="Role"
             name="role"
             value={formData.role}
             onChange={handleChange}
-            className="login-input"
+            margin="normal"
           >
-            <option value="user">Regular User</option>
-            <option value="admin">Administrator</option>
-          </select>
-          <button type="submit" className="login-btn">Register</button>
+            <MenuItem value="user">Regular User</MenuItem>
+            <MenuItem value="admin">Administrator</MenuItem>
+          </TextField>
+
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ mt: 3, mb: 2, fontWeight: 'bold', backgroundColor: '#4e54c8', '&:hover': { backgroundColor: '#3c40a0' } }}
+          >
+            Register
+          </Button>
         </form>
 
-        <p className="register-link">
-          🔙 Already registered?{' '}
-          <span onClick={() => navigate('/')} className="register-span">Login here</span>
-        </p>
-      </div>
-    </div>
+        <Typography
+          variant="body2"
+          sx={{ cursor: 'pointer', color: '#4e54c8', fontWeight: 'bold' }}
+          onClick={() => navigate('/')}
+          align="center"
+        >
+          🔙 Already registered? Login here
+        </Typography>
+      </Paper>
+    </Box>
   );
 }
 

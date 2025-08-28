@@ -1,174 +1,179 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
-const { body, validationResult } = require('express-validator');
 const Book = require('./models/Book');
 const User = require('./models/User');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const connectDB = require('./db');
 const cookieParser = require('cookie-parser');
+const connectDB = require('./db');
+
 const PORT = process.env.PORT || 5000;
-
-const app = express();
-
-
-// Connect to MongoDB Atlas
-connectDB();
-
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
-}));
-
-app.use(express.json());      // <== ADD THIS
-app.use(cookieParser());      // <== ADD THIS
-app.use(helmet());
-// ✅ CORS
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
-}));
-
-
-
 const JWT_SECRET = process.env.JWT_SECRET || "library_secret_key";
 
-// ✅ Preload Sample Data
+const app = express();
+// Middlewares
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
+app.use(express.json());
+app.use(cookieParser());
+app.use(helmet());
+
+// Preload sample data if empty
 const preloadData = async () => {
   const [booksCount, usersCount] = await Promise.all([
     Book.countDocuments(),
     User.countDocuments()
   ]);
 
+
   if (booksCount === 0) {
-    const sampleBooks = [
-      {
-        id: 1,
-        title: "The Girl in Room 105",
-        author: "Chetan Bhagat",
-        category: "Thriller",
-        year: 2018,
-        description: "A suspense thriller involving a mysterious murder.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 2,
-        title: "The Mahabharata Secret",
-        author: "Christopher C. Doyle",
-        category: "Thriller",
-        year: 2013,
-        description: "A gripping historical thriller based on ancient Indian secrets.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 3,
-        title: "The Immortals of Meluha",
-        author: "Amish Tripathi",
-        category: "Fantasy",
-        year: 2010,
-        description: "A mythological fantasy reimagining Lord Shiva’s life.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 4,
-        title: "The Secret of the Nagas",
-        author: "Amish Tripathi",
-        category: "Fantasy",
-        year: 2011,
-        description: "Sequel to Immortals of Meluha, diving deeper into Indian mythology.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 5,
-        title: "Grandma's Bag of Stories",
-        author: "Sudha Murty",
-        category: "Kids",
-        year: 2012,
-        description: "A delightful collection of moral stories for kids.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 6,
-        title: "The Magic Drum and Other Favourite Stories",
-        author: "Sudha Murty",
-        category: "Kids",
-        year: 2008,
-        description: "Traditional folk tales retold for children.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 7,
-        title: "2 States",
-        author: "Chetan Bhagat",
-        category: "Romance",
-        year: 2009,
-        description: "A love story about a couple from different Indian states.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 8,
-        title: "I Too Had a Love Story",
-        author: "Ravinder Singh",
-        category: "Romance",
-        year: 2008,
-        description: "A heart-touching romantic tale based on a true story.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 9,
-        title: "Serious Men",
-        author: "Manu Joseph",
-        category: "Comedy",
-        year: 2010,
-        description: "A satirical novel exploring ambition and caste in India.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      },
-      {
-        id: 10,
-        title: "Don’t Tell the Governor",
-        author: "Ravi Subramanian",
-        category: "Comedy",
-        year: 2018,
-        description: "A humorous political fiction novel.",
-        issued: false,
-        dueDate: null,
-        returnStatus: "Not Returned",
-        issuedBy: null
-      }
-    ];
+    const sampleBooks = [  {
+    id: 1,
+    title: "The Girl in Room 105",
+    author: "Chetan Bhagat",
+    category: "Thriller",
+    year: 2018,
+    description: "A suspense thriller involving a mysterious murder.",
+    totalCopies: 5,
+    availableCopies: 5,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 2,
+    title: "The Mahabharata Secret",
+    author: "Christopher C. Doyle",
+    category: "Thriller",
+    year: 2013,
+    description: "A gripping historical thriller based on ancient Indian secrets.",
+    totalCopies: 4,
+    availableCopies: 4,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 3,
+    title: "The Immortals of Meluha",
+    author: "Amish Tripathi",
+    category: "Fantasy",
+    year: 2010,
+    description: "A mythological fantasy reimagining Lord Shiva’s life.",
+    totalCopies: 6,
+    availableCopies: 6,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 4,
+    title: "The Secret of the Nagas",
+    author: "Amish Tripathi",
+    category: "Fantasy",
+    year: 2011,
+    description: "Sequel to Immortals of Meluha, diving deeper into Indian mythology.",
+    totalCopies: 6,
+    availableCopies: 6,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 5,
+    title: "Grandma's Bag of Stories",
+    author: "Sudha Murty",
+    category: "Kids",
+    year: 2012,
+    description: "A delightful collection of moral stories for kids.",
+    totalCopies: 7,
+    availableCopies: 7,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 6,
+    title: "The Magic Drum and Other Favourite Stories",
+    author: "Sudha Murty",
+    category: "Kids",
+    year: 2008,
+    description: "Traditional folk tales retold for children.",
+    totalCopies: 5,
+    availableCopies: 5,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 7,
+    title: "2 States",
+    author: "Chetan Bhagat",
+    category: "Romance",
+    year: 2009,
+    description: "A love story about a couple from different Indian states.",
+    totalCopies: 8,
+    availableCopies: 8,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 8,
+    title: "I Too Had a Love Story",
+    author: "Ravinder Singh",
+    category: "Romance",
+    year: 2008,
+    description: "A heart-touching romantic tale based on a true story.",
+    totalCopies: 6,
+    availableCopies: 6,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 9,
+    title: "Serious Men",
+    author: "Manu Joseph",
+    category: "Comedy",
+    year: 2010,
+    description: "A satirical novel exploring ambition and caste in India.",
+    totalCopies: 5,
+    availableCopies: 5,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  },
+  {
+    id: 10,
+    title: "Don’t Tell the Governor",
+    author: "Ravi Subramanian",
+    category: "Comedy",
+    year: 2018,
+    description: "A humorous political fiction novel.",
+    totalCopies: 7,
+    availableCopies: 7,
+    issued: false,
+    dueDate: null,
+    returnStatus: "Not Returned",
+    issuedBy: null
+  }
+];
     await Book.insertMany(sampleBooks);
     console.log("📚 Sample books loaded");
   }
@@ -183,9 +188,8 @@ const preloadData = async () => {
     console.log("👑 Admin user created (admin:admin123)");
   }
 };
-preloadData();
 
-// 🔐 Auth Middleware
+// Auth middleware
 const authenticate = (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Authentication required' });
@@ -194,11 +198,12 @@ const authenticate = (req, res, next) => {
     req.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch (err) {
+    console.error('Token verification failed:', err);
     res.status(401).json({ error: 'Invalid token' });
   }
 };
 
-// 🔐 Auth Routes
+// Auth routes
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password, role } = req.body;
@@ -254,9 +259,7 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ message: 'Logged out' });
 });
 
-// 📚 BOOK ROUTES
-
-// ✅ GET all books (authenticated and user-aware)
+// Book routes
 app.get('/books', authenticate, async (req, res) => {
   try {
     const { sortBy } = req.query;
@@ -265,11 +268,16 @@ app.get('/books', authenticate, async (req, res) => {
     let books = await Book.find();
 
     books = books.map(book => {
-      const overdue = book.issued && book.dueDate && new Date(book.dueDate) < new Date();
+      const isAvailable = book.availableCopies > 0;
+      const isBorrowedByMe = book.issuedBy === currentUser && book.returnStatus === "Not Returned";
+      const overdue = book.dueDate && new Date(book.dueDate) < new Date();
+      
       return {
         ...book._doc,
+        isAvailable,
+        isBorrowedByMe,
         overdue,
-        canReturn: book.issuedBy === currentUser
+        canReturn: isBorrowedByMe
       };
     });
 
@@ -280,108 +288,198 @@ app.get('/books', authenticate, async (req, res) => {
 
     res.json(books);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch books' });
   }
 });
 
-// ✅ GET /issued — Books issued by current user only
+// Get all issued books (Admin only)
+app.get('/books/issued', authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const issuedBooks = await Book.find({ 
+      issued: true,
+      returnStatus: "Not Returned"
+    }).sort({ dueDate: 1 });
+
+    res.json(issuedBooks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch issued books' });
+  }
+});
+
+// Get issued books for current user
 app.get('/issued', authenticate, async (req, res) => {
   try {
     const username = req.user.username;
-    const books = await Book.find({ issued: true, issuedBy: username });
+    const books = await Book.find({ 
+      issuedBy: username,
+      returnStatus: "Not Returned"
+    });
 
     const currentDate = new Date();
-    const userIssued = books.map(book => {
-      const overdue = book.dueDate && new Date(book.dueDate) < currentDate;
-      return {
-        ...book._doc,
-        overdue,
-        returnStatus: book.returnStatus || "Not Returned"
-      };
-    });
+    const userIssued = books.map(book => ({
+      ...book._doc,
+      overdue: book.dueDate && new Date(book.dueDate) < currentDate
+    }));
 
     res.json(userIssued);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch issued books" });
   }
 });
+// Issue a book by _id
+app.put("/books/:_id/issue", authenticate, async (req, res) => {
+  try {
+    const { _id } = req.params;
+    const username = req.user.username;
 
-// ✅ Issue book to user
-app.put("/books/:id/issue", authenticate, async (req, res) => {
-  const id = parseInt(req.params.id);
-  const username = req.user.username;
+    const book = await Book.findById(_id);
+    if (!book) return res.status(404).json({ error: "Book not found" });
 
-  const book = await Book.findOne({ id });
-  if (!book) return res.status(404).json({ error: "Book not found" });
-  if (book.issued) return res.status(400).json({ error: "Already issued" });
+    if (book.availableCopies <= 0) {
+      return res.status(400).json({ error: "No copies available to issue" });
+    }
 
-  const issuedCount = await Book.countDocuments({ issued: true, issuedBy: username });
-  if (issuedCount >= 3) return res.status(400).json({ error: "Issue limit reached (3 books)" });
+    // Check user's issue limit
+    const issuedCount = await Book.countDocuments({ 
+      issuedBy: username, 
+      returnStatus: "Not Returned" 
+    });
+    if (issuedCount >= 3) {
+      return res.status(400).json({ error: "Issue limit reached (3 books)" });
+    }
 
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 7);
+    // Update book status
+    book.availableCopies -= 1;
+    if (book.availableCopies === book.totalCopies - 1) {
+      book.issued = true; // First copy being issued
+    }
 
-  book.issued = true;
-  book.dueDate = dueDate.toISOString().split("T")[0];
-  book.returnStatus = "Not Returned";
-  book.issuedBy = username;
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 7);
+    book.dueDate = dueDate.toISOString().split("T")[0];
+    book.returnStatus = "Not Returned";
+    book.issuedBy = username;
 
-  await book.save();
-  res.json(book);
-});
-
-// ✅ Return book — Only by the user who issued it
-app.put("/books/:id/return", authenticate, async (req, res) => {
-  const id = parseInt(req.params.id);
-  const username = req.user.username;
-
-  const book = await Book.findOne({ id });
-  if (!book || !book.issued || book.issuedBy !== username) {
-    return res.status(403).json({ error: "Unauthorized return attempt" });
+    await book.save();
+    res.json(book);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to issue book" });
   }
-
-  book.issued = false;
-  book.dueDate = null;
-  book.returnStatus = "Returned";
-  book.issuedBy = null;
-
-  await book.save();
-  res.json(book);
 });
 
-// ➕ Add new book
+// Return a book by _id
+app.put("/books/:_id/return", authenticate, async (req, res) => {
+  try {
+    const { _id } = req.params;
+    const username = req.user.username;
+
+    const book = await Book.findById(_id);
+    if (!book) return res.status(404).json({ error: "Book not found" });
+
+    if (book.issuedBy !== username || book.returnStatus === "Returned") {
+      return res.status(403).json({ error: "Unauthorized return attempt" });
+    }
+
+    // Update book status
+    book.availableCopies += 1;
+    if (book.availableCopies === book.totalCopies) {
+      book.issued = false; // All copies returned
+    }
+
+    book.dueDate = null;
+    book.returnStatus = "Returned";
+    book.issuedBy = null;
+
+    await book.save();
+    res.json(book);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to return book" });
+  }
+});
+// Add new book
 app.post("/books", async (req, res) => {
   try {
     const newBook = new Book(req.body);
+    // If availableCopies not provided, set equal to totalCopies
+    if (newBook.availableCopies === undefined) {
+      newBook.availableCopies = newBook.totalCopies;
+    }
+    newBook.issued = false;
+    newBook.dueDate = null;
+    newBook.returnStatus = "Not Returned";
+    newBook.issuedBy = null;
+
     await newBook.save();
     res.status(201).json(newBook);
   } catch (err) {
+    console.error(err);
     res.status(400).json({ error: "Failed to add book", details: err.message });
   }
 });
 
-// 🗑️ Delete book
-app.delete("/books/:id", async (req, res) => {
+// Delete book by _id
+app.delete("/books/:_id", async (req, res) => {
   try {
-    const deleted = await Book.findByIdAndDelete(req.params.id);
+    const { _id } = req.params;
+    const deleted = await Book.findByIdAndDelete(_id);
     if (!deleted) return res.status(404).json({ error: "Book not found" });
     res.json({ message: "Book deleted" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Delete failed", details: err.message });
   }
 });
 
-// ✏️ Edit book
-app.put("/books/:id", async (req, res) => {
+// Edit book by _id
+app.put("/books/:_id", async (req, res) => {
   try {
-    const updatedBook = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { _id } = req.params;
+    const updateData = req.body;
+
+    const existingBook = await Book.findById(_id);
+    if (!existingBook) return res.status(404).json({ error: "Book not found" });
+
+    // Calculate number of issued copies currently
+    const issuedCopies = existingBook.totalCopies - existingBook.availableCopies;
+
+    // Validate totalCopies update does not make it less than issued copies
+    if (updateData.totalCopies !== undefined) {
+      if (updateData.totalCopies < issuedCopies) {
+        return res.status(400).json({
+          error: `Total copies (${updateData.totalCopies}) cannot be less than issued copies (${issuedCopies})`
+        });
+      }
+      // Adjust availableCopies accordingly
+      updateData.availableCopies = updateData.totalCopies - issuedCopies;
+    }
+
+    const updatedBook = await Book.findByIdAndUpdate(_id, updateData, { new: true });
     res.json(updatedBook);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Update failed" });
   }
 });
+(async () => {
+  try {
+    await connectDB();
 
-// ✅ Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+    // preloadData relies on DB, so await it here
+    await preloadData();
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+  }
+})();
