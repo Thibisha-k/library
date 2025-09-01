@@ -16,10 +16,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "library_secret_key";
 const app = express();
 // Middlewares
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'https://68b07943f31dcbbb44aee472--astonishing-sherbet-0a0dd1.netlify.app', // replace with your Netlify URL
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
