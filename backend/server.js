@@ -16,10 +16,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "library_secret_key";
 const app = express();
 // Middlewares
 app.use(cors({
-  origin: 'https://astonishing-sherbet-0a0dd1.netlify.app/', // replace with your Netlify URL
+  origin: 'https://astonishing-sherbet-0a0dd1.netlify.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
+
 
 app.use(express.json());
 app.use(cookieParser());
@@ -240,13 +241,13 @@ app.post('/api/auth/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '1d' }
     );
+res.cookie('token', token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'none',
+  maxAge: 86400000
+});
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 86400000
-    });
 
     res.json({ token, username: user.username, role: user.role });
   } catch (err) {
