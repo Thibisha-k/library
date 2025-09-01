@@ -26,7 +26,7 @@ function RegisterPage() {
     setMessage('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', formData);
+      const res = await axios.post('https://library-lzho.onrender.com/api/auth/register', formData);
       if (res.status === 201) {
         setMessage('✅ Registration successful! Redirecting...');
         setTimeout(() => navigate('/'), 1500);

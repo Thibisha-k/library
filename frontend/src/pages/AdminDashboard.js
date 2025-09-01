@@ -104,7 +104,7 @@ function AdminDashboard({ username, onLogout }) {
 
   const fetchBooks = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/books${sortBy ? `?sortBy=${sortBy}` : ""}`, getAuthHeader());
+      const res = await axios.get(`https://library-lzho.onrender.com/books${sortBy ? `?sortBy=${sortBy}` : ""}`, getAuthHeader());
       setBooks(res.data);
       setLoading(false);
     } catch (err) {
@@ -174,7 +174,7 @@ function AdminDashboard({ username, onLogout }) {
         dueDate: null,
         issuedBy: null,
       };
-      await axios.post("http://localhost:5000/books", bookToAdd, getAuthHeader());
+      await axios.post("https://library-lzho.onrender.com/books", bookToAdd, getAuthHeader());
       showToast("✅ Book added successfully!");
       resetForm();
       fetchBooks();
@@ -204,7 +204,7 @@ function AdminDashboard({ username, onLogout }) {
         totalCopies: totalCopiesNum,
         availableCopies: totalCopiesNum - copiesIssued,
       };
-      await axios.put(`http://localhost:5000/books/${editBookId}`, updatedBook, getAuthHeader());
+      await axios.put(`https://library-lzho.onrender.com/books/${editBookId}`, updatedBook, getAuthHeader());
       showToast("✏️ Book updated successfully!");
       resetForm();
       fetchBooks();
@@ -220,7 +220,7 @@ function AdminDashboard({ username, onLogout }) {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/books/${bookToDelete._id}`, getAuthHeader());
+      await axios.delete(`https://library-lzho.onrender.com/books/${bookToDelete._id}`, getAuthHeader());
       showToast("🗑️ Book deleted!");
       fetchBooks();
     } catch (err) {
@@ -247,7 +247,7 @@ function AdminDashboard({ username, onLogout }) {
   const handleToggleIssued = async (book) => {
     try {
       const updatedBook = { ...book, issued: !book.issued };
-      await axios.put(`http://localhost:5000/books/${book._id}`, updatedBook, getAuthHeader());
+      await axios.put(`https://library-lzho.onrender.com/books/${book._id}`, updatedBook, getAuthHeader());
       showToast(`Book marked as ${updatedBook.issued ? "Issued" : "Available"}`);
       fetchBooks();
     } catch (err) {
@@ -257,7 +257,7 @@ function AdminDashboard({ username, onLogout }) {
 
   const handleIssueBook = async (book) => {
     try {
-      await axios.put(`http://localhost:5000/books/${book._id}/issue`, {}, getAuthHeader());
+      await axios.put(`https://library-lzho.onrender.com/books/${book._id}/issue`, {}, getAuthHeader());
       showToast("✅ Book issued");
       fetchBooks();
     } catch (err) {

@@ -108,7 +108,7 @@ function UserDashboard({ username, onLogout }) {
   const fetchBooks = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`http://localhost:5000/books${sortBy ? `?sortBy=${sortBy}` : ""}`, {
+      const response = await axios.get(`https://library-lzho.onrender.com/books${sortBy ? `?sortBy=${sortBy}` : ""}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBooks(response.data);
@@ -142,7 +142,7 @@ function UserDashboard({ username, onLogout }) {
   const fetchIssuedBooks = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:5000/issued", {
+      const response = await axios.get("https://library-lzho.onrender.com/issued", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIssuedBooks(response.data.filter(book => book.issuedBy === username));
@@ -188,7 +188,7 @@ function UserDashboard({ username, onLogout }) {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:5000/books/${id}/issue`,
+        `https://library-lzho.onrender.com/books/${id}/issue`,
         { username },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -203,7 +203,7 @@ function UserDashboard({ username, onLogout }) {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:5000/books/${id}/return`,
+        `https://library-lzho.onrender.com/books/${id}/return`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
